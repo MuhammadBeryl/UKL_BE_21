@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `borrow` ADD COLUMN `qty` INTEGER NOT NULL DEFAULT 0;

@@ -1,0 +1,67 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum BorrowStatus {
+  BORROWED
+  RETURNED
+}
+
+enum GroupBy {
+  category
+  location
+}
+
+model User {
+  id         Int      @id @default(autoincrement()) // ID pengguna
+  uuid       String   @unique @default(uuid()) // UUID pengguna yang unik
+  name       String   @default("") // Nama pengguna
+  email      String   @unique // Email pengguna, harus unik
+  password   String   // Password pengguna, terenkripsi
+  role       Role     @default(USER) // Role pengguna (ADMIN atau USER)
+  createdAt  DateTime @default(now()) // Tanggal pembuatan akun
+  updatedAt  DateTime @default(now()) @updatedAt // Tanggal pembaruan terakhir
+  borrows    Borrow[] // Relasi dengan tabel Borrow
+}
+
+model Item {
+  id        Int      @id @default(autoincrement()) // ID barang
+  name      String   // Nama barang
+  category  String   // Kategori barang
+  location  String   // Lokasi barang
+  quantity  Int      // Jumlah barang yang tersedia
+  createdAt DateTime @default(now()) // Tanggal barang ditambahkan
+  borrows   Borrow[] // Relasi dengan tabel Borrow
+}
+
+model Borrow {
+  id           Int           @id @default(autoincrement()) // ID peminjaman
+  itemId       Int           // ID barang yang dipinjam
+  userId       Int           // ID pengguna yang meminjam
+  qty           Int           @default(0)
+  borrowDate   DateTime      @default(now()) // Tanggal peminjaman
+  returnDate   DateTime?     // Tanggal pengembalian barang, opsional
+  createdAt    DateTime      @default(now()) // Tanggal pembuatan peminjaman
+  status       BorrowStatus  @default(BORROWED) // Status peminjaman, defaultnya "BORROWED"
+
+  user         User          @relation(fields: [userId], references: [id]) // Relasi ke tabel User
+  item         Item          @relation(fields: [itemId], references: [id]) // Relasi ke tabel Item
+}
+
+
